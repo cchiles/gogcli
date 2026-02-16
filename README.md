@@ -24,7 +24,7 @@ Fast, script-friendly CLI for Gmail, Calendar, Chat, Classroom, Drive, Docs, Sli
 - **Groups** - list groups you belong to, view group members (Google Workspace)
 - **Local time** - quick local/UTC time display for scripts and agents
 - **Multiple accounts** - manage multiple Google accounts simultaneously (with aliases)
-- **Command allowlist** - restrict top-level commands for sandboxed/agent runs
+- **Command allowlist** - restrict commands (top-level or specific subcommands) for sandboxed/agent runs
 - **Secure credential storage** using OS keyring or encrypted on-disk keyring (configurable)
 - **Auto-refreshing tokens** - authenticate once, use indefinitely
 - **Least-privilege auth** - `--readonly` and `--drive-scope` to request fewer scopes
@@ -416,7 +416,7 @@ gog keep get <noteId> --account you@yourdomain.com
 - `GOG_PLAIN` - Default plain output
 - `GOG_COLOR` - Color mode: `auto` (default), `always`, or `never`
 - `GOG_TIMEZONE` - Default output timezone for Calendar/Gmail (IANA name, `UTC`, or `local`)
-- `GOG_ENABLE_COMMANDS` - Comma-separated allowlist of top-level commands (e.g., `calendar,tasks`)
+- `GOG_ENABLE_COMMANDS` - Comma-separated allowlist of commands or subcommand paths (e.g., `calendar,gmail.search,gmail.drafts.create`)
 
 ### Config File (JSON5)
 
@@ -483,6 +483,29 @@ gog --enable-commands calendar,tasks calendar events --today
 export GOG_ENABLE_COMMANDS=calendar,tasks
 gog tasks list <tasklistId>
 ```
+
+Subcommand-level restriction with dotted paths:
+
+```bash
+# Allow only gmail search and drafts create, plus all calendar commands
+gog --enable-commands='gmail.search,gmail.drafts.create,calendar' gmail search "invoice"
+# ✓ gmail search     → allowed
+# ✓ gmail drafts create → allowed
+# ✗ gmail send       → blocked
+# ✗ gmail drafts send → blocked
+# ✓ calendar events  → allowed (top-level "calendar" allows all subcommands)
+
+# Allow all drafts subcommands (prefix match)
+gog --enable-commands='gmail.drafts' gmail drafts list
+# ✓ gmail drafts list   → allowed
+# ✓ gmail drafts create → allowed
+# ✗ gmail send          → blocked
+
+# Via env var
+export GOG_ENABLE_COMMANDS='gmail.search,gmail.get,gmail.labels,calendar'
+```
+
+Top-level entries (e.g., `gmail`) remain backward-compatible and allow all subcommands. Dotted entries (e.g., `gmail.search`, `gmail.drafts.create`) restrict to that specific subcommand path. Intermediate dotted entries (e.g., `gmail.drafts`) allow all children.
  
 ## Security
 
@@ -1356,7 +1379,7 @@ gog --verbose gmail search 'newer_than:7d'
 All commands support these flags:
 
 - `--account <email|alias|auto>` - Account to use (overrides GOG_ACCOUNT)
-- `--enable-commands <csv>` - Allowlist top-level commands (e.g., `calendar,tasks`)
+- `--enable-commands <csv>` - Allowlist commands or subcommand paths (e.g., `calendar,gmail.search,gmail.drafts.create`)
 - `--json` - Output JSON to stdout (best for scripting)
 - `--plain` - Output stable, parseable text to stdout (TSV; no colors)
 - `--color <mode>` - Color mode: `auto`, `always`, or `never` (default: auto)
