@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.12.0 - Unreleased
+## 0.12.0 - 2026-02-17
 
 ### Added
 - Sheets: add `sheets insert` to insert rows/columns into a sheet. (#203) — thanks @andybergon.
