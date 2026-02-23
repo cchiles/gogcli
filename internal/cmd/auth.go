@@ -484,8 +484,9 @@ type AuthAddCmd struct {
 	ForceConsent bool          `name:"force-consent" help:"Force consent screen to obtain a refresh token"`
 	ServicesCSV  string        `name:"services" help:"Services to authorize: user|all or comma-separated ${auth_services} (Keep uses service account: gog auth service-account set)" default:"user"`
 	Readonly     bool          `name:"readonly" help:"Use read-only scopes where available (still includes OIDC identity scopes)"`
+	Safe         bool          `name:"safe" help:"Use safe/restricted scopes (eg. Gmail drafts only, no send)"`
 	DriveScope   string        `name:"drive-scope" help:"Drive scope mode: full|readonly|file" enum:"full,readonly,file" default:"full"`
-	GmailScope   string `name:"gmail-scope" help:"Gmail scope mode: full|readonly" enum:"full,readonly" default:"full"`
+	GmailScope   string        `name:"gmail-scope" help:"Gmail scope mode: full|readonly" enum:"full,readonly" default:"full"`
 }
 
 func (c *AuthAddCmd) Run(ctx context.Context, flags *RootFlags) error {
@@ -513,9 +514,11 @@ func (c *AuthAddCmd) Run(ctx context.Context, flags *RootFlags) error {
 	disableIncludeGrantedScopes := c.Readonly ||
 		driveScope == "readonly" ||
 		driveScope == strFile ||
-		gmailScope == "readonly"
+		gmailScope == "readonly" ||
+		c.Safe
 	scopes, err := googleauth.ScopesForManageWithOptions(services, googleauth.ScopeOptions{
 		Readonly:   c.Readonly,
+		Safe:       c.Safe,
 		DriveScope: googleauth.DriveScopeMode(c.DriveScope),
 		GmailScope: googleauth.GmailScopeMode(c.GmailScope),
 	})
