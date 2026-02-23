@@ -486,7 +486,7 @@ type AuthAddCmd struct {
 	Readonly     bool          `name:"readonly" help:"Use read-only scopes where available (still includes OIDC identity scopes)"`
 	Safe         bool          `name:"safe" help:"Use safe/restricted scopes (eg. Gmail drafts only, no send)"`
 	DriveScope   string        `name:"drive-scope" help:"Drive scope mode: full|readonly|file" enum:"full,readonly,file" default:"full"`
-	GmailScope   string `name:"gmail-scope" help:"Gmail scope mode: full|readonly" enum:"full,readonly" default:"full"`
+	GmailScope   string        `name:"gmail-scope" help:"Gmail scope mode: full|readonly" enum:"full,readonly" default:"full"`
 }
 
 func (c *AuthAddCmd) Run(ctx context.Context, flags *RootFlags) error {
